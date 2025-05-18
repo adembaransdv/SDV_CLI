@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io" 
+	"io"
 	"net/http"
 	"gopkg.in/ini.v1"
 )
@@ -27,37 +27,43 @@ func StopVM(c *client, vmID string) error {
 		return errors.New("erreur lors de la création de la requête POST")
 	}
 	req.Header.Add("Authorization", "Bearer "+c.Token)
+
 	clientHTTP := &http.Client{}
 	resp, err := clientHTTP.Do(req)
 	if err != nil {
 		return fmt.Errorf("erreur lors de l'appel HTTP : %v", err)
 	}
 	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("erreur lors de la lecture de la réponse : %v", err)
+	}
+
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("erreur lors de l'arrêt de la VM, code : %d", resp.StatusCode)
+		return fmt.Errorf("erreur lors de l'arrêt de la VM, code : %d, message : %s", resp.StatusCode, string(body))
 	}
-	var response map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return fmt.Errorf("erreur lors du décodage de la réponse : %v", err)
-	}
+
+	// Optionnel : afficher la réponse reçue
+	fmt.Println("Réponse de l'API StopVM :", string(body))
 
 	return nil
 }
 
 func CheckConfiguration() (*client, error) {
-        cfg, err := ini.Load("config.ini")
-        if err != nil {
-                return nil, fmt.Errorf("erreur lors de la lecture du fichier de configuration INI : %v", err)
-        }
+	cfg, err := ini.Load("config.ini")
+	if err != nil {
+		return nil, fmt.Errorf("erreur lors de la lecture du fichier de configuration INI : %v", err)
+	}
 
-        login := cfg.Section("vmware").Key("login").String()
-        password := cfg.Section("vmware").Key("password").String()
+	login := cfg.Section("vmware").Key("login").String()
+	password := cfg.Section("vmware").Key("password").String()
 
-        if login == "" || password == "" {
-                return nil, errors.New("les informations de connexion sont manquantes dans le fichier config.ini")
-        }
+	if login == "" || password == "" {
+		return nil, errors.New("les informations de connexion sont manquantes dans le fichier config.ini")
+	}
 
-        return Connection(login, password)
+	return Connection(login, password)
 }
 
 func Connection(login string, pass string) (*client, error) {
@@ -80,7 +86,7 @@ func Connection(login string, pass string) (*client, error) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body) 
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.New("erreur lors de la lecture de la réponse")
 	}
