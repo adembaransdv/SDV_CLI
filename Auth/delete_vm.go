@@ -14,7 +14,7 @@ import (
 
 var once sync.Once
 
-const host string = "http://127.0.0.1:5000"
+const host string = "http://192.168.1.3:5000"
 
 type client struct {
 	Client_name string
