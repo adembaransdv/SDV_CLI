@@ -1,26 +1,24 @@
-
 package cmd
 
 import (
     "fmt"
-    "sdvcli/vmware"
+    "os"
+    "sdvcli/Auth"
 
     "github.com/spf13/cobra"
 )
 
-var VmwareClient *vmware.Client
-
 var loginCmd = &cobra.Command{
     Use:   "login",
-    Short: "Connexion à vSphere",
+    Short: "Connexion à vSphere avec session en mémoire",
     Run: func(cmd *cobra.Command, args []string) {
-        c, err := vmware.Connection("administrator@vsphere.local", "SDVNantes44!!")
+        client, err := Auth.Connection("administrator@vsphere.local", "SDVNantes44!!")
         if err != nil {
-            fmt.Println("Erreur de connexion:", err)
-            return
+            fmt.Println("Login failed:", err)
+            os.Exit(1)
         }
-        VmwareClient = c
-        fmt.Println("Connexion réussie.")
+        VmwareClient = client
+        fmt.Println("Login successful.")
     },
 }
 

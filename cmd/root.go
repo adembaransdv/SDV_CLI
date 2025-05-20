@@ -1,20 +1,18 @@
-
 package cmd
 
 import (
-    "fmt"
-    "os"
+    "sdvcli/Auth"
+
     "github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
     Use:   "sdvcli",
-    Short: "CLI pour gérer vSphere",
+    Short: "CLI pour interagir avec vSphere",
 }
 
+var VmwareClient *Auth.Client
+
 func Execute() {
-    if err := rootCmd.Execute(); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
+    cobra.CheckErr(rootCmd.Execute())
 }
