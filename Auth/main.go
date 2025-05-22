@@ -1,6 +1,7 @@
 package vmware
 
 import (
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -15,7 +16,7 @@ import (
 
 var once sync.Once
 
-type client struct {
+type Client struct {
 	Client_name string
 	Token       string
 }
@@ -24,21 +25,17 @@ type sessionResponse struct {
 	Value string `json:"value"`
 }
 
-type VM struct {
-	VM         string `json:"vm"`
-	Name       string `json:"name"`
-	PowerState string `json:"power_state"`
+const Host string = "https://192.168.1.3"
+
+var InsecureHTTPClient = &http.Client{
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	},
 }
 
-type VMResponse struct {
-	Value []VM `json:"value"`
-}
-
-const host string = "http://127.0.0.1:5000"
-
-func Connection(login string, pass string) (*client, error) {
+func Connection(login string, pass string) (*Client, error) {
 	// APPEL API POUR GET LE TOKEN
-	url := host + "/rest/com/vmware/cis/session"
+	url := Host + "/rest/com/vmware/cis/session"
 
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
@@ -49,8 +46,8 @@ func Connection(login string, pass string) (*client, error) {
 	authEncoded := base64.StdEncoding.EncodeToString([]byte(auth))
 	req.Header.Add("Authorization", "Basic "+authEncoded)
 
-	clienthttp := &http.Client{}
-	resp, err := clienthttp.Do(req)
+	// utilise le client global
+	resp, err := InsecureHTTPClient.Do(req)
 	if err != nil {
 		fmt.Println("Erreur lors de la requête POST :", err)
 		return nil, errors.New("erreur lors de l'appel HTTP")
@@ -68,60 +65,13 @@ func Connection(login string, pass string) (*client, error) {
 		return nil, errors.New("erreur lors du parsing JSON")
 	}
 
-	c := &client{
+	return &Client{
 		Client_name: login,
 		Token:       session.Value,
-	}
-	return c, nil
+	}, nil
 }
 
-func GetVMlist(c *client) (string, error) {
-	req, err := http.NewRequest("GET", host+"/rest/vcenter/vm", nil)
-	if err != nil {
-		return "", errors.New("erreur lors de la création de la requête GET")
-	}
-	req.Header.Add("Authorization", c.Token)
-
-	clientHTTP := &http.Client{}
-	resp, err := clientHTTP.Do(req)
-	if err != nil {
-		fmt.Println("Erreur lors de la requête GET :", err)
-		return "", errors.New("Erreur lors de la requete http")
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", errors.New("erreur lors de la lecture du corps de la réponse")
-	}
-	if resp.StatusCode != 200 {
-		return "truc", fmt.Errorf("requête échouée avec le code %d : %s", resp.StatusCode, string(body))
-	}
-	return string(body), nil
-}
-
-func AffichageVM(jsonData string) error {
-	var vmResp VMResponse
-	err := json.Unmarshal([]byte(jsonData), &vmResp)
-	if err != nil {
-		return fmt.Errorf("erreur lors du parsing du JSON : %v", err)
-	}
-
-	if len(vmResp.Value) == 0 {
-		fmt.Println("Aucune VM trouvée.")
-		return nil
-	}
-
-	fmt.Println("Liste des VMs :")
-	fmt.Println("ID        | Nom              | État")
-	fmt.Println("--------------------------------------------")
-	for _, vm := range vmResp.Value {
-		fmt.Printf("%-10s | %-16s | %s\n", vm.VM, vm.Name, vm.PowerState)
-	}
-	return nil
-}
-
-func CheckConfiguration() (*client, error) {
+func CheckConfiguration() (*Client, error) {
 	cfg, err := ini.Load("config.ini")
 	if err != nil {
 		log.Fatalf("Erreur de lecture du fichier de configuration INI : %v", err)
