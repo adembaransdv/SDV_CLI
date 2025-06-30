@@ -48,16 +48,16 @@ func DeleteVM(c *vmware.Client, vmID string) error {
 
 	req.Header.Add("vmware-api-session-id", c.Token)
 
-	clientHTTP := &http.Client{}
-	resp, err := clientHTTP.Do(req)
+	resp, err := vmware.InsecureHTTPClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("erreur lors de la requête DELETE : %v", err)
+		fmt.Println("Erreur lors de la requête POST :", err)
+		return errors.New("Erreur lors de la requete http")
 	}
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	if resp.StatusCode != 204 {
+	if resp.StatusCode != 200 && resp.StatusCode != 204 {
 		return fmt.Errorf("échec suppression VM, status %d : %s", resp.StatusCode, string(body))
 	}
 
