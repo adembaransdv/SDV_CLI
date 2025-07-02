@@ -23,7 +23,7 @@ type VMResponse struct {
 	Value []VM `json:"value"`
 }
 
-var StartCmd = &cobra.Command{
+var ListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Liste les vm",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -43,7 +43,7 @@ var StartCmd = &cobra.Command{
 }
 
 func init() {
-	ServeurCmd.AddCommand(StartCmd)
+	ServeurCmd.AddCommand(ListCmd)
 }
 
 func getVMlist(c *vmware.Client) (string, error) {

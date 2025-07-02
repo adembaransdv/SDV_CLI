@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	vmware "SDVCLI/Auth"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
-	vmware "SDVCLI/Auth"
+
 	"github.com/spf13/cobra"
 )
 
