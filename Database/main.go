@@ -33,8 +33,6 @@ func CheckDatabase() (bool, error) {
 			return false, fmt.Errorf("erreur écriture fichier encodé : %v", err)
 		}
 		fmt.Println("Fichier Database.db encodé en Base64")
-	} else {
-		fmt.Println("Fichier déjà encodé en Base64")
 	}
 
 	return true, nil

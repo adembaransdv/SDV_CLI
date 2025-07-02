@@ -42,6 +42,10 @@ var vmShowCmd = &cobra.Command{
 
 		body, _ := ioutil.ReadAll(resp.Body)
 		if resp.StatusCode != 200 {
+			if resp.StatusCode == 404 {
+				fmt.Println("Le serveur n'existe pas.")
+				return
+			}
 			fmt.Printf("Erreur HTTP %d : %s\n", resp.StatusCode, string(body))
 			return
 		}
