@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	vmware "SDVCLI/Auth"
+	database "SDVCLI/Database"
 
 	"github.com/spf13/cobra"
 )
@@ -52,9 +53,9 @@ func createVM(client *vmware.Client, host, name, guestOS string) error {
 			"name":     name,
 			"guest_OS": guestOS,
 			"placement": map[string]interface{}{
-				"folder":        "group-v22",    // À adapter selon ton infra
-				"resource_pool": "resgroup-9",   // À adapter
-				"datastore":     "datastore-11", // À adapter
+				"folder":        "group-v22",
+				"resource_pool": "resgroup-9",
+				"datastore":     "datastore-11",
 				"host":          "host-10",
 			},
 		},
@@ -92,7 +93,8 @@ func createVM(client *vmware.Client, host, name, guestOS string) error {
 	if err := json.Unmarshal(body, &result); err != nil {
 		return fmt.Errorf("erreur lors du parsing JSON : %v", err)
 	}
-
+	database.CheckDatabase()
+	database.AddKeyToBDD(result.Value, "test")
 	fmt.Println("ID de la VM créée :", result.Value)
 	return nil
 }
