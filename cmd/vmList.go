@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	vmware "SDVCLI/Auth"
+	database "SDVCLI/Database"
 
 	"github.com/spf13/cobra"
 )
@@ -86,7 +87,13 @@ func affichageVM(jsonData string) error {
 	fmt.Println("ID        | Nom              | État")
 	fmt.Println("--------------------------------------------")
 	for _, vm := range vmResp.Value {
-		fmt.Printf("%-10s | %-16s | %s\n", vm.VM, vm.Name, vm.PowerState)
+		valid, err := database.FindInBDD(vm.VM)
+		if err != nil {
+			fmt.Println("Erreur dans la recherche en base de données")
+		}
+		if valid == true {
+			fmt.Printf("%-10s | %-16s | %s\n", vm.VM, vm.Name, vm.PowerState)
+		}
 	}
 	return nil
 }
