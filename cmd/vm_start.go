@@ -64,6 +64,6 @@ func StartVM(c *vmware.Client, vmID string) error {
         return fmt.Errorf("erreur lors du démarrage de la VM, code : %d, message : %s", resp.StatusCode, string(body))
     }
 
-    fmt.Println("Réponse de l'API StartVM :", string(body))
+    fmt.Println(string(body))
     return nil
 }
