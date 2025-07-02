@@ -1,12 +1,14 @@
 package cmd
 
 import (
-	vmware "SDVCLI/Auth"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	vmware "SDVCLI/Auth"
+	database "SDVCLI/Database"
 
 	"github.com/spf13/cobra"
 )
@@ -24,13 +26,29 @@ var DeleteCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		exists, err := database.FindInBDD(vmID)
+		if err != nil {
+			fmt.Println("Erreur lors de la vérification dans la base :", err)
+			os.Exit(1)
+		}
+		if !exists {
+			fmt.Printf("La VM avec l'ID %s n'existe pas dans la base.\n", vmID)
+			os.Exit(1)
+		}
+
 		err = DeleteVM(config, vmID)
 		if err != nil {
 			fmt.Printf("Erreur lors de la suppression de la VM : %v\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Println("VM supprimée avec succès.")
+		err = database.DeleteFromBDD(vmID)
+		if err != nil {
+			fmt.Printf("Erreur lors de la suppression dans la base : %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Println("VM supprimée avec succès, entrée supprimée dans la base.")
 	},
 }
 
@@ -38,7 +56,6 @@ func init() {
 	ServeurCmd.AddCommand(DeleteCmd)
 }
 
-// Ta fonction DeleteVM reste ici dans cmd
 func DeleteVM(c *vmware.Client, vmID string) error {
 	url := vmware.Host + "/rest/vcenter/vm/" + vmID
 
@@ -51,8 +68,7 @@ func DeleteVM(c *vmware.Client, vmID string) error {
 
 	resp, err := vmware.InsecureHTTPClient.Do(req)
 	if err != nil {
-		fmt.Println("Erreur lors de la requête POST :", err)
-		return errors.New("Erreur lors de la requete http")
+		return fmt.Errorf("Erreur lors de la requête DELETE : %v", err)
 	}
 	defer resp.Body.Close()
 

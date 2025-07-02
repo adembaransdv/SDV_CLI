@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
-
+	"errors"
 	"gopkg.in/ini.v1"
 )
 
@@ -97,4 +97,47 @@ func AddKeyToBDD(key, value string) error {
 	}
 
 	return nil
+}
+func DeleteFromBDD(vmID string) error {
+    filename := "Database.db"
+
+    // Lire le fichier encodé
+    encodedData, err := os.ReadFile(filename)
+    if err != nil {
+        return fmt.Errorf("erreur lecture fichier base64 : %v", err)
+    }
+
+    data, err := base64.StdEncoding.DecodeString(string(encodedData))
+    if err != nil {
+        return fmt.Errorf("erreur décodage base64 : %v", err)
+    }
+
+    cfg, err := ini.Load(data)
+    if err != nil {
+        return fmt.Errorf("erreur chargement ini : %v", err)
+    }
+
+    key := cfg.Section("default").Key(vmID)
+    if key == nil || key.String() == "" {
+        return errors.New("aucune entrée trouvée à supprimer")
+    }
+
+    cfg.Section("default").DeleteKey(vmID)
+
+    var buf []byte
+    bufWriter := new(bytes.Buffer)
+    _, err = cfg.WriteTo(bufWriter)
+    if err != nil {
+        return fmt.Errorf("erreur écriture ini en mémoire : %v", err)
+    }
+    buf = bufWriter.Bytes()
+
+    encoded := base64.StdEncoding.EncodeToString(buf)
+
+    err = os.WriteFile(filename, []byte(encoded), 0644)
+    if err != nil {
+        return fmt.Errorf("erreur écriture fichier encodé : %v", err)
+    }
+
+    return nil
 }
