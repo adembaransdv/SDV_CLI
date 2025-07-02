@@ -6,6 +6,7 @@ import (
     "io"
     "net/http"
     vmware "SDVCLI/Auth"
+    database "SDVCLI/Database"
     "github.com/spf13/cobra"
 )
 
@@ -19,7 +20,19 @@ var StartCmd = &cobra.Command{
             fmt.Println("Aucune configuration trouvée")
             return
         }
+
         vmID := args[0]
+
+        exists, err := database.FindInBDD(vmID)
+        if err != nil {
+            fmt.Println("Erreur lors de la vérification dans la base :", err)
+            return
+        }
+        if !exists {
+            fmt.Printf("La VM avec l'ID %s n'existe pas dans la base.\n", vmID)
+            return
+        }
+
         err = StartVM(config, vmID)
         if err != nil {
             fmt.Println("Impossible de démarrer la VM :", err)
