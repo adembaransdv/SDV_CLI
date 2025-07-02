@@ -41,7 +41,13 @@ var DeleteCmd = &cobra.Command{
             os.Exit(1)
         }
 
-        fmt.Println("VM supprimée avec succès.")
+        err = database.DeleteFromBDD(vmID)
+        if err != nil {
+            fmt.Printf("Erreur lors de la suppression dans la base : %v\n", err)
+            os.Exit(1)
+        }
+
+        fmt.Println("VM supprimée avec succès, entrée supprimée dans la base.")
     },
 }
 
@@ -50,7 +56,7 @@ func init() {
 }
 
 func DeleteVM(c *vmware.Client, vmID string) error {
-    url := fmt.Sprintf("%s/rest/vcenter/vm/%s", vmware.Host, vmID)
+    url := vmware.Host + "/rest/vcenter/vm/" + vmID
 
     req, err := http.NewRequest("DELETE", url, nil)
     if err != nil {
@@ -61,7 +67,7 @@ func DeleteVM(c *vmware.Client, vmID string) error {
 
     resp, err := vmware.InsecureHTTPClient.Do(req)
     if err != nil {
-        return fmt.Errorf("erreur lors de la requête DELETE : %v", err)
+        return fmt.Errorf("Erreur lors de la requête DELETE : %v", err)
     }
     defer resp.Body.Close()
 
