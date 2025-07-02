@@ -1,8 +1,9 @@
-
 package main
 
-import "sdvcli/cmd"
+import (
+	"SDVCLI/cmd"
+)
 
 func main() {
-    cmd.Execute()
+	cmd.Execute()
 }

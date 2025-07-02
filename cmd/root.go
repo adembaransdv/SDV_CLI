@@ -1,18 +1,12 @@
 package cmd
 
-import (
-    "sdvcli/Auth"
+import "github.com/spf13/cobra"
 
-    "github.com/spf13/cobra"
-)
-
-var rootCmd = &cobra.Command{
-    Use:   "sdvcli",
-    Short: "CLI pour interagir avec vSphere",
+var Rootcmd = &cobra.Command{
+	Use:   "SDVCLI",
+	Short: "CLI",
 }
 
-var VmwareClient *Auth.Client
-
 func Execute() {
-    cobra.CheckErr(rootCmd.Execute())
+	cobra.CheckErr(Rootcmd.Execute())
 }
