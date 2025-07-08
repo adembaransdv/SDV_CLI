@@ -32,7 +32,7 @@ Interface en ligne de commande (CLI) permettant la gestion de machines virtuelle
 SDV_CLI-preprod/
 ├── main.go             # Point d'entrée principal
 ├── Auth/               # Gestion de l'authentification API
-├── Database/           # Stockage local des paramètres de connexion
+├── Database/           # Stockage local des VM créées
 ├── cmd/                # Toutes les commandes CLI
 ```
 
@@ -150,6 +150,11 @@ Ce module gère la session avec l’API REST de vCenter :
 ---
 
 ## 📌 Pistes d’amélioration
+
+-Créer des volumes, et les attacher à l'instance
+-pouvoir gérer les interfaces réseaux
+-Gestion des droits dans une organisation
+-Mis en place de la CI/CD
 
 ---
 
